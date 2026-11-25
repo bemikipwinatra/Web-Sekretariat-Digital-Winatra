@@ -53,3 +53,8 @@ Render Chromium (Playwright) di 360, 390, 768, 1024, 1440 px pada beranda, struk
 - Jika sheet `pejabat` berisi data salah, jalankan fungsi `resetPejabat` di Apps Script.
 - Corak pixel-batik pada pembatas antar-section dan header halaman.
 - Hapus dari repo: Code.gs, app.js, dan style.css di root (sisa versi lama, tidak dipakai).
+
+## Pembaruan v6.2
+- Struktur: tanpa kotak Lembaga, Dewan Pertimbangan dan Staf Khusus tidak ditampilkan, Sekretaris Kabinet di samping Wapres (tanpa kotak). Halaman Kementerian tidak lagi memuat Presiden/Wapres.
+- Panel admin: tab **Struktur** menampilkan semua nama di halaman Struktur (pimpinan, menteri, pejabat departemen); ubah nama dan foto langsung dari sini. Tambah/hapus departemen lewat tab Kementerian.
+- Hero beranda bermotif batik. Halaman Masuk menampilkan Winatra Card (data akun disamarkan, `assets/img/winatra-card-sensor.png`).

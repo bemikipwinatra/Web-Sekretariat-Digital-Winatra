@@ -180,7 +180,7 @@ body[data-page^="dash"] .sec::before,body[data-page^="dash"] .sec::after{display
 .pr .pl{height:34px;width:auto;flex:none}.pr.big .pt b{font-size:1.1875rem}.pr.big .pl{height:40px}
 .pr.dk{background:var(--brown);color:#fff}.pr.dk small{color:var(--light)}.pr.dk .ph-w{border-color:#fff;box-shadow:3px 3px 0 var(--mid)}.pr.dk .pl{background:#fff;padding:3px}
 .pr.wp{background:#F3DDBE}.pr.flat{border:0;box-shadow:none;padding:0;background:none}
-.lemb{display:grid;gap:12px;grid-template-columns:1fr;width:100%;max-width:960px;padding:16px;border:2px dashed var(--mid);background:rgba(255,255,255,.55);position:relative}
+.lemb-x{display:grid;gap:12px;grid-template-columns:1fr;width:100%;max-width:960px;padding:16px;border:2px dashed var(--mid);background:rgba(255,255,255,.55);position:relative}
 .lemb>b{grid-column:1/-1;text-align:center;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:#A5530F}
 @media(min-width:768px){.lemb{grid-template-columns:repeat(3,1fr)}}
 .mn{display:flex;flex-direction:column;gap:12px;background:var(--white);border:2px solid var(--brown);box-shadow:var(--sh);padding:12px;height:100%}
@@ -204,3 +204,36 @@ body[data-page^="dash"] .sec::before,body[data-page^="dash"] .sec::after{display
 @media(min-width:768px){.sec.qk{padding-bottom:var(--s6)}}
 .sec{padding-top:max(var(--s6),32px)}
 .sec.qk::after{display:none}
+
+/* v6.2: hero batik, sekretaris di samping wapres, kartu login */
+.hero::before{content:"";position:absolute;inset:0 0 0 30%;background:var(--bt);opacity:.3;-webkit-mask-image:linear-gradient(90deg,transparent,#000 70%);mask-image:linear-gradient(90deg,transparent,#000 70%);pointer-events:none}
+.hero>.container{position:relative;z-index:1}
+.wprow{display:flex;flex-direction:column;align-items:center;width:100%;position:relative}
+.pr.plain{background:none;border:0;box-shadow:none;padding:0;width:auto}
+.sekr{display:flex;justify-content:center}
+@media(min-width:992px){.wprow{display:block;padding-bottom:44px}.wprow .olead{margin-inline:auto}.sekv{display:none}
+ .sekr{position:absolute;left:calc(50% + 170px);top:50%;width:calc(50% - 170px);padding:28px 0 0 48px;justify-content:flex-start}
+ .sekr::before{content:"";position:absolute;left:0;top:0;width:48px;height:3px;background:var(--brown)}
+ .sekr::after{content:"";position:absolute;left:45px;top:0;width:3px;height:28px;background:var(--brown)}}
+.wcard{position:relative;max-width:620px;margin-inline:auto;text-align:center}
+.wc-img{width:100%;height:auto;display:block;border-radius:18px;box-shadow:0 14px 0 rgba(90,58,34,.14);animation:wfloat 6s ease-in-out infinite;transform-origin:50% 60%}
+.wc-sh{width:60%;height:16px;margin:22px auto 0;border-radius:50%;background:rgba(90,58,34,.18);filter:blur(6px);animation:wsh 6s ease-in-out infinite}
+@keyframes wfloat{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-14px) rotate(1deg)}}
+@keyframes wsh{0%,100%{transform:scaleX(1);opacity:1}50%{transform:scaleX(.8);opacity:.6}}
+.wc-cap{margin-top:24px}.wc-cap h2{font-size:clamp(1.25rem,2.5vw,1.625rem);margin:4px 0 8px}.wc-cap p{margin:0 auto 8px;color:#6B4A30}.wc-cap small{color:var(--mid)}
+#loginForm{max-width:460px}
+.wcard{padding:14px 12px 0;overflow:hidden}
+
+/* v6.3: kartu login lebih kecil, animasi halus, teks rata kiri-kanan */
+.wcard{max-width:360px;text-align:left;padding:10px 8px 0}
+.wc-img{border-radius:14px;box-shadow:0 8px 0 rgba(90,58,34,.14);animation:wfloat2 7s ease-in-out infinite}
+@keyframes wfloat2{0%,100%{transform:translateY(0) rotate(-.6deg)}50%{transform:translateY(-6px) rotate(.6deg)}}
+.wc-sh{width:55%;height:10px;margin-top:16px}
+.wc-cap{margin-top:16px}.wc-cap h2{font-size:1.125rem}.wc-cap p{font-size:.9375rem;text-align:justify;text-justify:inter-word;margin:0}
+@media(min-width:992px){.wcard{margin-inline:0 auto}}
+@media(max-width:991px){.wcard{margin-inline:auto}}
+
+/* v6.4: form dan kartu login sebagai satu grup di tengah */
+.lg-wrap{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:40px 72px}
+.lg-f{flex:0 1 460px;width:100%;max-width:460px;min-width:0}.lg-c{flex:0 1 360px;width:100%;max-width:360px;min-width:0}
+.wcard{margin-inline:auto!important;max-width:100%}

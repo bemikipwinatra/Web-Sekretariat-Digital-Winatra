@@ -73,18 +73,17 @@ const dc=m=>{if(m.logo==='presiden-wapres')return 'Pimpinan BEM';const d=J(m.dep
 async function pimpinan(){
   let p=[];try{p=(await get('pejabat')).filter(x=>String(x.jabatan||'').trim()&&String(x.nama||'').trim())}catch(e){}
   if(!p.length){const pr=(await get('kementerian')).find(x=>x.logo==='presiden-wapres');p=pr?J(pr.departemen).map((d,i)=>({jabatan:d.n,nama:d.p,foto:d.f||'',urut:i+1})):[]}
-  return [...p].sort((a,b)=>a.urut-b.urut)}
+  return [...p].filter(x=>!/pertimbangan|khusus/i.test(x.jabatan)).sort((a,b)=>a.urut-b.urut)}
 const ICO={'sekretaris':'sekretaris-kabinet','pertimbangan':'dewan-pertimbangan-presiden','khusus':'staf-khusus-komunikasi'};
 const icoOf=j=>{const k=Object.keys(ICO).find(x=>String(j).toLowerCase().includes(x));return k?`assets/ikon/${ICO[k]}.png`:''};
 const pr=(p,o={})=>{const t=o.tag||'div';return `<${t} class="pr ${o.cls||''}"${o.href?` href="${o.href}"`:''}>${photo(p.foto,p.nama,o.w||52)}<span class="pt"><b>${esc(p.nama||'Belum diisi')}</b><small>${esc(p.jabatan)}</small></span>${o.logo?`<img class="pl" src="${o.logo}" alt="">`:''}</${t}>`};
 async function struktur(){
   const [k,p]=await Promise.all([get('kementerian'),pimpinan()]);k.sort((a,b)=>a.urut-b.urut);
-  const mem=k.filter(x=>x.logo!=='presiden-wapres'),pres=p.find(x=>/^presiden/i.test(x.jabatan)),wp=p.find(x=>/^wakil/i.test(x.jabatan)),rest=p.filter(x=>x!==pres&&x!==wp),LG='assets/logo/presiden-wapres.png';
+  const mem=k.filter(x=>x.logo!=='presiden-wapres'),pres=p.find(x=>/^presiden/i.test(x.jabatan)),wp=p.find(x=>/^wakil/i.test(x.jabatan)),sek=p.find(x=>/sekretaris/i.test(x.jabatan)),LG='assets/logo/presiden-wapres.png';
   const dep=m=>J(m.departemen).map(d=>`<li>${d.i?`<img src="assets/ikon/${esc(d.i)}.png" alt="">`:'<i></i>'}<span><b>${esc(d.p||'Belum diisi')}</b><small>${esc(d.n)}</small></span></li>`).join('');
   return head('Struktur Organisasi','Susunan Kabinet Winatra')+`<section class="sec"><div class="container"><div class="org3">
   ${pres?`<div class="olead">${pr(pres,{cls:'dk big',w:64,logo:LG})}</div><div class="vl s"></div>`:''}
-  ${wp?`<div class="olead">${pr(wp,{cls:'wp big',w:64,logo:LG})}</div><div class="vl s"></div>`:''}
-  ${rest.length?`<div class="lemb"><b>Lembaga di bawah Presiden dan Wakil Presiden</b>${rest.map(r=>pr(r,{w:48,logo:icoOf(r.jabatan)})).join('')}</div><div class="vl s"></div>`:''}
+  ${wp?`<div class="wprow"><div class="olead">${pr(wp,{cls:'wp big',w:64,logo:LG})}</div>${sek?`<div class="vl s sekv"></div><div class="sekr">${pr(sek,{cls:'plain',w:52})}</div>`:''}</div><div class="vl s"></div>`:''}
   <div class="kids2" style="--n:${mem.length||1}">${mem.map(m=>`<div class="kc"><div class="mn"><a class="mh" href="#/kementerian/${esc(m.id)}"><img src="assets/logo/${esc(m.logo)}.png" alt=""><b>${esc(m.nama)}</b></a>${pr({foto:m.foto,nama:m.menteri,jabatan:'Menteri'},{cls:'flat',w:48})}<ul class="dl3">${dep(m)}</ul></div></div>`).join('')}</div></div></div></section>`}
 async function kementerian(id){
   const k=(await get('kementerian')).sort((a,b)=>a.urut-b.urut),pjs=await pimpinan();
@@ -95,7 +94,7 @@ async function kementerian(id){
     const deps=J(x.departemen).filter(d=>!(isP&&/^(presiden|wakil presiden)/i.test(d.n)));
     const dcard=d=>{const q=pjs.find(z=>z.jabatan===d.n)||{},f=d.f||q.foto||'',nm=d.p||q.nama||'';return `<div class="dcard">${photo(f,nm||d.n,72)}<div class="dbody"><b class="dn">${esc(nm||'Belum diisi')}</b><span class="dd">${d.i?`<img src="assets/ikon/${esc(d.i)}.png" alt="">`:''}${esc(d.n)}</span>${d.t?`<details><summary>Lihat tupoksi</summary>${li(d.t)}</details>`:''}</div></div>`};
     return head(esc(x.nama),dc(x))+`<section class="sec"><div class="container"><div class="row g-4"><div class="col-lg-5"><div class="card"><div class="kc-top"><div class="d-grid gap-3">${lead.map(l=>`<div class="ldr">${photo(l.f,l.nm,84)}<div><span class="tag">${esc(l.tg)}</span><div class="mname">${esc(l.nm||'Belum diisi')}</div></div></div>`).join('')}</div><img class="kimg" src="assets/logo/${esc(x.logo)}.png" alt="Logo ${esc(x.nama)}"></div><h3 class="mt-3">Tugas pokok dan fungsi</h3>${li(x.tupoksi)||'<p>Belum diisi.</p>'}<h3 class="mt-3">Call center</h3><p>${x.callcenter?(wa(x.callcenter)?`<a href="${wa(x.callcenter)}" target="_blank" rel="noopener">${esc(x.callcenter)}</a>`:esc(x.callcenter)):'Belum tersedia.'}</p></div></div><div class="col-lg-7"><div class="grid">${deps.map(dcard).join('')}</div></div></div><a class="btn-px alt mt-4" href="#/kementerian"><i class="bi bi-arrow-left"></i> Kembali</a></div></section>`}
-  const rows=k.flatMap(x=>x.logo==='presiden-wapres'?[{...x,menteri:pres?.nama||'Belum diisi',foto:pres?.foto,nama:'Presiden BEM'},{...x,menteri:wp?.nama||'Belum diisi',foto:wp?.foto,nama:'Wakil Presiden BEM'}]:[x]);
+  const rows=k.filter(x=>x.logo!=='presiden-wapres');
   return head('Kementerian dan Departemen','Tugas pokok, fungsi, dan jalur pengaduan')+sec('','',`<div class="grid g3">${rv(rows,x=>`<a class="card" href="#/kementerian/${esc(x.id)}"><div class="kc-top">${photo(x.foto,x.menteri,84)}<img class="kimg" src="assets/logo/${esc(x.logo)}.png" alt=""></div><div class="mname mt-2">${esc(x.menteri)}</div><h3 class="kname">${esc(x.nama)}</h3><p>${dc(x)} &middot; Call center: ${esc(x.callcenter||'-')}</p></a>`)}</div>`)}
 let evFilter='Semua';
 async function event(){
@@ -118,8 +117,9 @@ async function tim(){
 const navLogin=()=>{const s=ses(),a=$('#loginLink');if(!a)return;a.textContent=s?'Dasbor':'Masuk';a.href=s?DASH(s.user.role):'#/login'};
 async function login(){
   const s=ses();if(s){location.href=DASH(s.user.role);return''}
-  return head('Masuk','Khusus ormawa, BEM, dan Kemahasiswaan')+`<section class="sec"><div class="container"><form class="card" id="loginForm" style="max-width:460px"><label>Username<input class="form-control" name="username" required autocomplete="username" autocapitalize="none"></label><label>Kata sandi<input class="form-control" name="password" type="password" required autocomplete="current-password"></label><button class="btn-px" type="submit">Masuk</button><p class="mb-0 small">${DEMO_ON?'Mode demo:<br>Admin: <b>admin</b> / <b>admin123</b><br>Ormawa: <b>ormawa</b> / <b>ormawa123</b><br>Kemahasiswaan: <b>kemahasiswaan</b> / <b>kem123</b>':'Gunakan akun yang diberikan oleh BEM.'}</p></form></div></section>`}
-const TITLE={berita:'Berita',event:'Event',proker:'Proker',proker_bem:'Proker BEM',tinjau:'Tinjau Proker Ormawa',pejabat:'Struktur: Pimpinan',tim:'Tim Web',ebook:'E-book',template:'Template',kementerian:'Kementerian',users:'Pengguna'};
+  return head('Masuk','Akses khusus pemegang Winatra Card')+`<section class="sec"><div class="container"><div class="lg-wrap"><div class="lg-f"><form class="card" id="loginForm"><label>Username<input class="form-control" name="username" required autocomplete="username" autocapitalize="none"></label><label>Kata sandi<input class="form-control" name="password" type="password" required autocomplete="current-password"></label><button class="btn-px" type="submit">Masuk</button><p class="mb-0 small">${DEMO_ON?'Mode demo:<br>Admin: <b>admin</b> / <b>admin123</b><br>Ormawa: <b>ormawa</b> / <b>ormawa123</b><br>Kemahasiswaan: <b>kemahasiswaan</b> / <b>kem123</b>':'Isi dengan username dan kata sandi yang tertera pada Winatra Card.'}</p></form></div>
+  <div class="lg-c"><div class="wcard"><img class="wc-img" src="assets/img/winatra-card-sensor.png" width="1100" height="693" alt="Contoh Winatra Card, data akun disamarkan"><div class="wc-sh" aria-hidden="true"></div><div class="wc-cap"><span class="tag"><i class="bi bi-credit-card-2-front"></i> Winatra Card</span><h2>Masuk hanya dengan Winatra Card</h2><p>Username dan kata sandi hanya tertera pada Winatra Card yang dibagikan BEM kepada setiap ormawa.</p></div></div></div></div></div></section>`}
+const TITLE={berita:'Berita',event:'Event',proker:'Proker',proker_bem:'Proker BEM',tinjau:'Tinjau Proker Ormawa',pejabat:'Struktur: Pimpinan',struktur:'Struktur',tim:'Tim Web',ebook:'E-book',template:'Template',kementerian:'Kementerian',users:'Pengguna'};
 const FIELDS={
  berita:[['judul','Judul'],['ringkasan','Ringkasan','area'],['isi','Isi berita','area'],['gambar','Tautan gambar (Drive)','url'],['tanggal','Tanggal','date'],['penulis','Penulis']],
  event:[['judul','Judul event'],['penyelenggara','Penyelenggara'],['tanggal','Tanggal','date'],['lokasi','Lokasi'],['poster','Tautan poster (Drive)','url'],['juknis','Tautan juknis (Drive)','url'],['narahubung','Nama narahubung'],['kontak','WhatsApp narahubung','tel'],['status','Status','select:Tayang,Draf,Menunggu']],
@@ -127,17 +127,18 @@ const FIELDS={
  ebook:[['judul','Judul'],['penulis','Penulis'],['kategori','Kategori'],['sampul','Tautan sampul (Drive)','url'],['tautan','Tautan e-book (Drive)','url']],
  template:[['nama','Nama template'],['kategori','Kategori'],['tautan','Tautan file (Drive)','url']],
  tim:[['peran','Peran (contoh: Pimpinan Produksi)'],['nama','Nama'],['foto','Foto (tautan Google Drive)','url'],['urut','Urutan','number']],
+ struktur:[['jabatan','Jabatan'],['nama','Nama'],['foto','Foto','url']],
  pejabat:[['jabatan','Jabatan'],['nama','Nama'],['foto','Foto (tautan Google Drive)','url'],['urut','Urutan','number']],
  kementerian:[['nama','Nama kementerian'],['menteri','Nama menteri'],['foto','Foto menteri (tautan Google Drive)','url'],['tupoksi','Tupoksi (satu baris satu poin)','area'],['callcenter','Call center (WhatsApp)','tel'],['logo','Nama file logo'],['urut','Urutan','number'],['departemen','Departemen dan staf','dep']],
  users:[['username','Username'],['password','Kata sandi (kosongkan jika tidak diubah)','password'],['nama','Nama'],['role','Peran','select:ormawa,admin,kemahasiswaan'],['ormawa','Nama ormawa']]};
 let S={sheet:null,rows:[],edit:null,next:null};
-const DESC={pejabat:'Mengatur Presiden, Wakil Presiden, Sekretaris Kabinet, Dewan Pertimbangan Presiden, dan Staf Khusus yang tampil di halaman Struktur. Isi nama, foto (tautan Drive), dan urutan. Urutan 1 = Presiden, 2 = Wakil Presiden.',tim:'Susunan tim pengembang web di halaman Tim Web. Orang dengan peran yang sama otomatis dikelompokkan. Urutan menentukan posisi kelompok.',kementerian:'Nama menteri, foto menteri, tupoksi, call center, dan daftar departemen beserta pejabat dan fotonya.'};
+const DESC={struktur:'Semua nama yang tampil di halaman Struktur: Presiden, Wakil Presiden, Sekretaris Kabinet, menteri, dan pejabat tiap departemen. Klik Ubah untuk mengganti nama dan foto (tautan Drive). Menambah atau menghapus departemen dilakukan lewat tab Kementerian.',pejabat:'Mengatur Presiden, Wakil Presiden, Sekretaris Kabinet, Dewan Pertimbangan Presiden, dan Staf Khusus yang tampil di halaman Struktur. Isi nama, foto (tautan Drive), dan urutan. Urutan 1 = Presiden, 2 = Wakil Presiden.',tim:'Susunan tim pengembang web di halaman Tim Web. Orang dengan peran yang sama otomatis dikelompokkan. Urutan menentukan posisi kelompok.',kementerian:'Nama menteri, foto menteri, tupoksi, call center, dan daftar departemen beserta pejabat dan fotonya.'};
 const ARS=['proker','proker_bem','event','tinjau'];
 const SH=()=>['proker_bem','tinjau'].includes(S.sheet)?'proker':S.sheet;
 const isBem=x=>x.pemilik==='admin'||x.ormawa==='BEM';
-const keyOf=()=>S.sheet==='users'?'username':'id';
-const LBL={status:'Status BEM',catatan:'Catatan BEM',status_kem:'Status Kemahasiswaan',catatan_kem:'Catatan Kemahasiswaan'};
-const cell=(x,c)=>{if(/^status/.test(c)){const v=c==='status_kem'&&x.status==='Diterima'&&!x[c]?'Menunggu':x[c];return v?`<span class="badge ${esc(v)}">${esc(v)}</span>`:'-'}return esc(String(x[c]??'').slice(0,140))||'-'};
+const keyOf=()=>S.sheet==='users'?'username':S.sheet==='struktur'?'rid':'id';
+const LBL={grup:'Bagian',foto:'Foto',jabatan:'Jabatan',nama:'Nama',status:'Status BEM',catatan:'Catatan BEM',status_kem:'Status Kemahasiswaan',catatan_kem:'Catatan Kemahasiswaan'};
+const cell=(x,c)=>{if(/^status/.test(c)){const v=c==='status_kem'&&x.status==='Diterima'&&!x[c]?'Menunggu':x[c];return v?`<span class="badge ${esc(v)}">${esc(v)}</span>`:'-'}if(c==='foto')return x.foto?'Ada':'-';return esc(String(x[c]??'').slice(0,140))||'-'};
 async function kemDash(s){
   S.sheet='proker';S.kind='kemahasiswaan';
   S.rows=(await post({action:'list',sheet:'proker'})).data.filter(x=>x.status==='Diterima');
@@ -162,25 +163,37 @@ function tinjauForm(r){
 const acts=x=>{const id=esc(x[keyOf()]),own=ses().user.role!=='admin',a=x.arsip==='ya';
   return (S.sheet==='tinjau'?`<button class="btn-px sm" data-act="tinjau" data-id="${id}">Tinjau</button>`:`<button class="btn-px sm" data-act="edit" data-id="${id}">Ubah</button>`)
   +(ARS.includes(S.sheet)?`<button class="btn-px sm alt" data-act="arsip" data-id="${id}" data-v="${a?0:1}"><i class="bi bi-${a?'arrow-counterclockwise':'archive'}"></i> ${a?'Aktifkan':'Arsipkan'}</button>`:'')
-  +(['proker','proker_bem','tinjau'].includes(S.sheet)||(S.sheet==='event'&&own)?'':`<button class="btn-px sm del" data-act="del" data-id="${id}">Hapus</button>`)};
+  +(['proker','proker_bem','tinjau','struktur'].includes(S.sheet)||(S.sheet==='event'&&own)?'':`<button class="btn-px sm del" data-act="del" data-id="${id}">Hapus</button>`)};
 const viewChips=()=>ARS.includes(S.sheet)?`<div class="chips">${[['aktif','Aktif'],['arsip','Arsip (selesai)']].map(([v,l])=>`<button class="chip ${S.view===v?'on':''}" data-view="${v}">${l} (${S.all.filter(x=>(x.arsip==='ya')===(v==='arsip')).length})</button>`).join('')}</div>`:'';
 const deItem=(d={})=>`<fieldset class="de"><label>Nama departemen / jabatan<input class="form-control" data-k="n" value="${esc(d.n)}"></label><label>Nama pejabat<input class="form-control" data-k="p" value="${esc(d.p)}"></label><label>Foto pejabat (tautan Google Drive)<input class="form-control" data-k="f" type="url" value="${esc(d.f)}"></label><label>Nama file ikon (opsional)<input class="form-control" data-k="i" value="${esc(d.i)}"></label><label>Tupoksi (satu baris satu poin)<textarea class="form-control" data-k="t" rows="3">${esc(d.t)}</textarea></label><button type="button" class="btn-px sm del" data-act="depdel">Hapus bagian ini</button></fieldset>`;
 const depEditor=r=>`<div id="depEd"><b class="d-block mb-2">Departemen dan staf</b><div class="dl">${J(r?.departemen).map(deItem).join('')}</div><button type="button" class="btn-px sm alt mb-3" data-act="depadd"><i class="bi bi-plus-lg"></i> Tambah departemen / staf</button></div>`;
 const collectDep=()=>[...document.querySelectorAll('#depEd .de')].map(f=>Object.fromEntries([...f.querySelectorAll('[data-k]')].map(x=>[x.dataset.k,x.value.trim()]))).filter(d=>d.n);
+const NOTIN=/pertimbangan|khusus/i;
+async function strukturRows(){
+  const [pj,k]=await Promise.all([post({action:'list',sheet:'pejabat'}).then(r=>r.data).catch(()=>[]),post({action:'list',sheet:'kementerian'}).then(r=>r.data)]);
+  k.sort((a,b)=>a.urut-b.urut);const rows=[],pw=k.find(x=>x.logo==='presiden-wapres');
+  const pim=pj.filter(x=>String(x.jabatan||'').trim());
+  if(pim.length)pim.filter(x=>!NOTIN.test(x.jabatan)).sort((a,b)=>a.urut-b.urut).forEach(x=>rows.push({rid:'p:'+x.id,grup:'Pimpinan',jabatan:x.jabatan,nama:x.nama,foto:x.foto,_:{t:'p',row:x}}));
+  else if(pw)J(pw.departemen).filter(d=>!NOTIN.test(d.n)).forEach((d,i)=>rows.push({rid:'d:'+pw.id+':'+i,grup:'Pimpinan',jabatan:d.n,nama:d.p,foto:d.f,_:{t:'d',row:pw,i}}));
+  k.filter(x=>x.logo!=='presiden-wapres').forEach(m=>{rows.push({rid:'m:'+m.id,grup:m.nama,jabatan:'Menteri',nama:m.menteri,foto:m.foto,_:{t:'m',row:m}});J(m.departemen).forEach((d,i)=>rows.push({rid:'d:'+m.id+':'+i,grup:m.nama,jabatan:d.n,nama:d.p,foto:d.f,_:{t:'d',row:m,i}}))});
+  return rows}
+function strForm(r){
+  S.edit=r;modal('Ubah: '+r.jabatan,`<p class="small mb-2">${esc(r.grup)}</p><form id="strForm"><label>Nama<input class="form-control" name="nama" required value="${esc(r.nama)}"></label><label>Foto (tautan Google Drive)<input class="form-control" name="foto" type="url" value="${esc(r.foto)}"></label></form>`,`<button class="btn-px alt" data-bs-dismiss="modal">Batal</button><button class="btn-px" type="submit" form="strForm">Simpan</button>`)}
 async function dash(kind){
   const s=ses();
   if(!s){location.href='index.html#/login';return''}
   if(s.user.role!==kind){location.href=DASH(s.user.role);return''}
   if(kind==='kemahasiswaan')return kemDash(s);
-  const tabs=kind==='admin'?['tinjau','proker_bem','berita','event','ebook','template','pejabat','tim','kementerian','users']:['proker','event'];if(!tabs.includes(S.sheet))S.sheet=tabs[0];S.kind=kind;
-  S.rows=(await post({action:'list',sheet:SH()})).data;S.view=S.view||'aktif';if(S.sheet==='proker_bem')S.rows=S.rows.filter(isBem);if(S.sheet==='tinjau')S.rows=S.rows.filter(x=>!isBem(x));S.all=S.rows;if(ARS.includes(S.sheet))S.rows=S.rows.filter(x=>(x.arsip==='ya')===(S.view==='arsip'));const f=FIELDS[SH()],own=s.user.role!=='admin',cols=S.sheet==='tinjau'?['ormawa','program','waktu','status','catatan','status_kem']:S.sheet==='proker_bem'?['program','waktu','status_kem','catatan_kem']:SH()==='proker'?(own?['program','waktu']:['ormawa','program']).concat(['status','catatan','status_kem','catatan_kem']):f.slice(0,3).map(x=>x[0]).concat(f.find(x=>x[0]==='status')?['status']:[]);
+  const tabs=kind==='admin'?['tinjau','proker_bem','berita','event','ebook','template','struktur','tim','kementerian','users']:['proker','event'];if(!tabs.includes(S.sheet))S.sheet=tabs[0];S.kind=kind;
+  S.rows=S.sheet==='struktur'?await strukturRows():(await post({action:'list',sheet:SH()})).data;S.view=S.view||'aktif';if(S.sheet==='proker_bem')S.rows=S.rows.filter(isBem);if(S.sheet==='tinjau')S.rows=S.rows.filter(x=>!isBem(x));S.all=S.rows;if(ARS.includes(S.sheet))S.rows=S.rows.filter(x=>(x.arsip==='ya')===(S.view==='arsip'));const f=FIELDS[SH()],own=s.user.role!=='admin',cols=S.sheet==='struktur'?['grup','jabatan','nama','foto']:S.sheet==='tinjau'?['ormawa','program','waktu','status','catatan','status_kem']:S.sheet==='proker_bem'?['program','waktu','status_kem','catatan_kem']:SH()==='proker'?(own?['program','waktu']:['ormawa','program']).concat(['status','catatan','status_kem','catatan_kem']):f.slice(0,3).map(x=>x[0]).concat(f.find(x=>x[0]==='status')?['status']:[]);
   const cnt=st=>S.rows.filter(x=>x.status===st).length;
   return head(kind==='admin'?'Dasbor Super Admin':'Dasbor Ormawa',`Masuk sebagai ${esc(s.user.nama)}${s.user.ormawa?' ('+esc(s.user.ormawa)+')':''}`)+`<section class="sec"><div class="container"><div class="dash"><nav class="side" aria-label="Data">${tabs.map(t=>`<button class="chip ${t===S.sheet?'on':''}" data-tab="${t}">${TITLE[t]}</button>`).join('')}<button class="chip" data-act="logout"><i class="bi bi-box-arrow-right"></i> Keluar</button></nav>
   <div>${statCards(f)}
-  <div class="bar"><input class="form-control" id="q" type="search" placeholder="Cari data..." aria-label="Cari" style="max-width:320px">${S.sheet==='tinjau'?'':'<button class="btn-px" data-act="new"><i class="bi bi-plus-lg"></i> Tambah</button>'}</div>
+  <div class="bar"><input class="form-control" id="q" type="search" placeholder="Cari data..." aria-label="Cari" style="max-width:320px">${['tinjau','struktur'].includes(S.sheet)?'':'<button class="btn-px" data-act="new"><i class="bi bi-plus-lg"></i> Tambah</button>'}</div>
   ${DESC[S.sheet]?`<p class="hint">${DESC[S.sheet]}</p>`:''}${viewChips()}
   ${S.rows.length?`<table class="tbl"><thead><tr>${cols.map(c=>`<th>${LBL[c]||c}</th>`).join('')}<th>Aksi</th></tr></thead><tbody>${S.rows.map(x=>`<tr>${cols.map(c=>`<td data-l="${LBL[c]||c}">${cell(x,c)}</td>`).join('')}<td><div class="acts">${acts(x)}</div></td></tr>`).join('')}</tbody></table>`:empty('Belum ada data.')}</div></div></div></section>`}
 function form(row){
+  if(S.sheet==='struktur')return strForm(row);
   S.edit=row;
   const own=ses().user.role!=='admin',f=FIELDS[SH()].filter(x=>!((own||S.sheet==='proker_bem')&&['status','penyelenggara','catatan','ormawa'].includes(x[0])));
   const inp=([k,l,t])=>{const v=row?.[k]??'',b=`class="form-control" name="${k}"`;
@@ -232,6 +245,11 @@ document.addEventListener('submit',async e=>{
     if(e.target.id==='loginForm'){const r=await post({action:'login',...o});sessionStorage.setItem('w',JSON.stringify(r));location.href=DASH(r.user.role)}
     if(e.target.id==='tinjauForm'){if(o.status!=='Diterima'&&!o.catatan.trim())throw new Error('Isi catatan alasan untuk ormawa');await post({action:'tinjau',sheet:'proker',id:S.edit.id,status:o.status,catatan:o.catatan});MD.hide();toast('Keputusan tersimpan');route()}
     if(e.target.id==='kemForm'){if(o.status!=='Disetujui'&&!o.catatan.trim())throw new Error('Isi keterangan untuk ormawa');await post({action:'decide_kem',sheet:'proker',id:S.edit.id,status:o.status,catatan:o.catatan});MD.hide();toast('Putusan tersimpan');route()}
+    if(e.target.id==='strForm'){const t=S.edit._;let sh,row;
+      if(t.t==='p'){sh='pejabat';row={...t.row,nama:o.nama,foto:o.foto}}
+      else if(t.t==='m'){sh='kementerian';row={...t.row,menteri:o.nama,foto:o.foto}}
+      else{const dp=J(t.row.departemen);dp[t.i]={...dp[t.i],p:o.nama,f:o.foto};sh='kementerian';row={...t.row,departemen:JSON.stringify(dp)}}
+      await post({action:'save',sheet:sh,row});MD.hide();delete cache.pejabat;delete cache.kementerian;toast('Tersimpan');route()}
     if(e.target.id==='crudForm'){const k=keyOf();if(S.edit)o[k]=S.edit[k];if(SH()==='kementerian')o.departemen=JSON.stringify(collectDep());await post({action:'save',sheet:SH(),row:o});MD.hide();delete cache[SH()];toast('Tersimpan');route()}
   }catch(err){toast(err.message||'Gagal',false)}
 });

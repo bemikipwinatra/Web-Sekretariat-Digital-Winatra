@@ -16,3 +16,4 @@ proker:[{id:1,ormawa:'UKM Demo',program:'Latihan Rutin',waktu:'Januari 2027',ang
 users:[{username:'admin',nama:'Admin Demo',role:'admin',ormawa:''},{username:'ormawa',nama:'Ormawa Demo',role:'ormawa',ormawa:'UKM Demo'}]};
 
 window.DEMO.pejabat=[{id:1,jabatan:'Presiden BEM',nama:'Dedy Indra Setiawan',foto:'',urut:1},{id:2,jabatan:'Wakil Presiden BEM',nama:'Lita Marga Ningrum',foto:'',urut:2},{id:3,jabatan:'Sekretaris Kabinet',nama:'Fulan',foto:'',urut:3},{id:4,jabatan:'Dewan Pertimbangan Presiden',nama:'Belum diisi',foto:'',urut:4},{id:5,jabatan:'Staf Khusus Bidang Komunikasi',nama:'Belum diisi',foto:'',urut:5}];
+window.DEMO.tim=[{id:1,peran:'Pimpinan Produksi',nama:'Dedy Indra Setiawan',foto:'',urut:1},{id:2,peran:'Penanggung Jawab',nama:'Aulia',foto:'',urut:2},{id:3,peran:'Monitoring & Maintenance',nama:'Yoga',foto:'',urut:3}];

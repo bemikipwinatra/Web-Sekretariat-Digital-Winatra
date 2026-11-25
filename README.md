@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Web BEM IKIP PGRI Bojonegoro - Kabinet Winatra (v2, front-end baru)
 
 HTML5, CSS3, JavaScript ES6+, Bootstrap 5.3 dan Bootstrap Icons (CDN). Tanpa build tool, siap untuk GitHub Pages/Netlify.
@@ -47,7 +46,10 @@ Render Chromium (Playwright) di 360, 390, 768, 1024, 1440 px pada beranda, struk
 - Foto pejabat: isi tautan Google Drive (akses "siapa saja yang memiliki link") di tab Pejabat Pimpinan dan Kementerian (admin).
 - Ormawa tidak bisa menghapus data; gunakan Arsipkan (program selesai) dan Aktifkan untuk membatalkan.
 - Logo coklat vektor: assets/logo/kabinet-winatra-coklat.svg (navbar dan hero). Footer memakai logo berwarna asli.
-=======
-# Web-Sekretariat-Digital-Winatra
-Web Sekretariat Digital Winatra
->>>>>>> a2767424041fdd191815b98706ca4fdf0549e679
+
+## Pembaruan v6
+- Struktur dirombak: ringkas, berlogo, menampilkan menteri beserta departemen. Presiden dan Wakil Presiden dipisah (juga di halaman Kementerian).
+- Tab admin "Struktur: Pimpinan" (sheet `pejabat`) = Presiden, Wapres, Sekretaris Kabinet, DPP, Staf Khusus. Tab "Tim Web" (sheet `tim`) = susunan tim pengembang web.
+- Jika sheet `pejabat` berisi data salah, jalankan fungsi `resetPejabat` di Apps Script.
+- Corak pixel-batik pada pembatas antar-section dan header halaman.
+- Hapus dari repo: Code.gs, app.js, dan style.css di root (sisa versi lama, tidak dipakai).

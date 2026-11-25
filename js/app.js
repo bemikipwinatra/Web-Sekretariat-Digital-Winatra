@@ -71,24 +71,32 @@ const photo=(u,n,w=96)=>`<div class="ph-w" style="--pw:${w}px"><span>${esc(ini(n
 const person=(p,cls='',w=104,tag='div',href='')=>`<${tag} class="pc ${cls}"${href?` href="${href}"`:''}>${photo(p.foto,p.nama,w)}<b class="pn">${esc(p.nama||'Belum diisi')}</b><span class="pj">${esc(p.jabatan)}</span>${p.extra||''}</${tag}>`;
 const dc=m=>{if(m.logo==='presiden-wapres')return 'Pimpinan BEM';const d=J(m.departemen),n=d.filter(i=>/^Departemen/.test(i.n)).length,st=d.length-n;return `${n} departemen${st?` &middot; ${st} staf`:''}`};
 async function pimpinan(){
-  let p=[];try{p=await get('pejabat')}catch(e){}
+  let p=[];try{p=(await get('pejabat')).filter(x=>String(x.jabatan||'').trim()&&String(x.nama||'').trim())}catch(e){}
   if(!p.length){const pr=(await get('kementerian')).find(x=>x.logo==='presiden-wapres');p=pr?J(pr.departemen).map((d,i)=>({jabatan:d.n,nama:d.p,foto:d.f||'',urut:i+1})):[]}
   return [...p].sort((a,b)=>a.urut-b.urut)}
+const ICO={'sekretaris':'sekretaris-kabinet','pertimbangan':'dewan-pertimbangan-presiden','khusus':'staf-khusus-komunikasi'};
+const icoOf=j=>{const k=Object.keys(ICO).find(x=>String(j).toLowerCase().includes(x));return k?`assets/ikon/${ICO[k]}.png`:''};
+const pr=(p,o={})=>{const t=o.tag||'div';return `<${t} class="pr ${o.cls||''}"${o.href?` href="${o.href}"`:''}>${photo(p.foto,p.nama,o.w||52)}<span class="pt"><b>${esc(p.nama||'Belum diisi')}</b><small>${esc(p.jabatan)}</small></span>${o.logo?`<img class="pl" src="${o.logo}" alt="">`:''}</${t}>`};
 async function struktur(){
   const [k,p]=await Promise.all([get('kementerian'),pimpinan()]);k.sort((a,b)=>a.urut-b.urut);
-  const mem=k.filter(x=>x.logo!=='presiden-wapres'),pres=p.find(x=>/^presiden/i.test(x.jabatan)),wp=p.find(x=>/^wakil/i.test(x.jabatan)),rest=p.filter(x=>x!==pres&&x!==wp);
-  return head('Struktur Organisasi','Susunan Kabinet Winatra')+`<section class="sec"><div class="container"><div class="org2">
-  ${pres?`<div class="lead">${person(pres,'dk lg',132)}</div><div class="vl"></div>`:''}
-  ${wp?`<div class="lead">${person(wp,'wp lg',132)}</div><div class="vl"></div>`:''}
-  ${rest.length?`<div class="lembaga"><b>Lembaga di bawah Presiden dan Wakil Presiden</b><div class="row3">${rest.map(r=>person(r,'',96)).join('')}</div></div><div class="vl"></div>`:''}
-  <div class="kids2" style="--n:${mem.length||1}">${mem.map(m=>`<div class="kc">${person({foto:m.foto,nama:m.menteri,jabatan:m.nama,extra:`<span class="meta"><img src="assets/logo/${esc(m.logo)}.png" alt="">${dc(m)}</span>`},'',96,'a','#/kementerian/'+esc(m.id))}</div>`).join('')}</div></div></div></section>`}
+  const mem=k.filter(x=>x.logo!=='presiden-wapres'),pres=p.find(x=>/^presiden/i.test(x.jabatan)),wp=p.find(x=>/^wakil/i.test(x.jabatan)),rest=p.filter(x=>x!==pres&&x!==wp),LG='assets/logo/presiden-wapres.png';
+  const dep=m=>J(m.departemen).map(d=>`<li>${d.i?`<img src="assets/ikon/${esc(d.i)}.png" alt="">`:'<i></i>'}<span><b>${esc(d.p||'Belum diisi')}</b><small>${esc(d.n)}</small></span></li>`).join('');
+  return head('Struktur Organisasi','Susunan Kabinet Winatra')+`<section class="sec"><div class="container"><div class="org3">
+  ${pres?`<div class="olead">${pr(pres,{cls:'dk big',w:64,logo:LG})}</div><div class="vl s"></div>`:''}
+  ${wp?`<div class="olead">${pr(wp,{cls:'wp big',w:64,logo:LG})}</div><div class="vl s"></div>`:''}
+  ${rest.length?`<div class="lemb"><b>Lembaga di bawah Presiden dan Wakil Presiden</b>${rest.map(r=>pr(r,{w:48,logo:icoOf(r.jabatan)})).join('')}</div><div class="vl s"></div>`:''}
+  <div class="kids2" style="--n:${mem.length||1}">${mem.map(m=>`<div class="kc"><div class="mn"><a class="mh" href="#/kementerian/${esc(m.id)}"><img src="assets/logo/${esc(m.logo)}.png" alt=""><b>${esc(m.nama)}</b></a>${pr({foto:m.foto,nama:m.menteri,jabatan:'Menteri'},{cls:'flat',w:48})}<ul class="dl3">${dep(m)}</ul></div></div>`).join('')}</div></div></div></section>`}
 async function kementerian(id){
-  const k=(await get('kementerian')).sort((a,b)=>a.urut-b.urut);
-  if(id){const x=k.find(i=>String(i.id)===id);if(!x)return empty('Tidak ditemukan.');const pjs=await pimpinan();
-    const li=t=>`<ul class="mt-2">${String(t||'').split('\n').filter(Boolean).map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`;
-    const dcard=d=>{const f=d.f||(pjs.find(q=>q.jabatan===d.n)||{}).foto||'',nm=d.p||(pjs.find(q=>q.jabatan===d.n)||{}).nama||'';return `<div class="dcard">${photo(f,nm||d.n,88)}<div class="dbody"><b class="dn">${esc(nm||'Belum diisi')}</b><span class="dd">${d.i?`<img src="assets/ikon/${esc(d.i)}.png" alt="">`:''}${esc(d.n)}</span>${d.t?`<details><summary>Lihat tupoksi</summary>${li(d.t)}</details>`:''}</div></div>`};
-    return head(esc(x.nama),dc(x))+`<section class="sec"><div class="container"><div class="row g-4"><div class="col-lg-5"><div class="card"><div class="kc-top"><div class="ldr">${photo(x.foto,x.menteri,112)}<div><span class="tag">${x.logo==='presiden-wapres'?'Pimpinan':'Menteri'}</span><div class="mname">${esc(x.menteri)}</div></div></div><img class="kimg" src="assets/logo/${esc(x.logo)}.png" alt="Logo ${esc(x.nama)}"></div><h3 class="mt-3">Tugas pokok dan fungsi</h3>${li(x.tupoksi)||'<p>Belum diisi.</p>'}<h3 class="mt-3">Call center</h3><p>${x.callcenter?(wa(x.callcenter)?`<a href="${wa(x.callcenter)}" target="_blank" rel="noopener">${esc(x.callcenter)}</a>`:esc(x.callcenter)):'Belum tersedia.'}</p></div></div><div class="col-lg-7"><div class="grid">${J(x.departemen).map(dcard).join('')}</div></div></div><a class="btn-px alt mt-4" href="#/kementerian"><i class="bi bi-arrow-left"></i> Kembali</a></div></section>`}
-  return head('Kementerian dan Departemen','Tugas pokok, fungsi, dan jalur pengaduan')+sec('','',`<div class="grid g3">${rv(k,x=>`<a class="card" href="#/kementerian/${esc(x.id)}"><div class="kc-top">${photo(x.foto,x.menteri,84)}<img class="kimg" src="assets/logo/${esc(x.logo)}.png" alt=""></div><div class="mname mt-2">${esc(x.menteri)}</div><h3 class="kname">${esc(x.nama)}</h3><p>${dc(x)} &middot; Call center: ${esc(x.callcenter||'-')}</p></a>`)}</div>`)}
+  const k=(await get('kementerian')).sort((a,b)=>a.urut-b.urut),pjs=await pimpinan();
+  const pres=pjs.find(x=>/^presiden/i.test(x.jabatan)),wp=pjs.find(x=>/^wakil/i.test(x.jabatan));
+  if(id){const x=k.find(i=>String(i.id)===id);if(!x)return empty('Tidak ditemukan.');
+    const isP=x.logo==='presiden-wapres',li=t=>`<ul class="mt-2">${String(t||'').split('\n').filter(Boolean).map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`;
+    const lead=isP?[pres,wp].filter(Boolean).map(q=>({nm:q.nama,f:q.foto,tg:q.jabatan})):[{nm:x.menteri,f:x.foto,tg:'Menteri'}];
+    const deps=J(x.departemen).filter(d=>!(isP&&/^(presiden|wakil presiden)/i.test(d.n)));
+    const dcard=d=>{const q=pjs.find(z=>z.jabatan===d.n)||{},f=d.f||q.foto||'',nm=d.p||q.nama||'';return `<div class="dcard">${photo(f,nm||d.n,72)}<div class="dbody"><b class="dn">${esc(nm||'Belum diisi')}</b><span class="dd">${d.i?`<img src="assets/ikon/${esc(d.i)}.png" alt="">`:''}${esc(d.n)}</span>${d.t?`<details><summary>Lihat tupoksi</summary>${li(d.t)}</details>`:''}</div></div>`};
+    return head(esc(x.nama),dc(x))+`<section class="sec"><div class="container"><div class="row g-4"><div class="col-lg-5"><div class="card"><div class="kc-top"><div class="d-grid gap-3">${lead.map(l=>`<div class="ldr">${photo(l.f,l.nm,84)}<div><span class="tag">${esc(l.tg)}</span><div class="mname">${esc(l.nm||'Belum diisi')}</div></div></div>`).join('')}</div><img class="kimg" src="assets/logo/${esc(x.logo)}.png" alt="Logo ${esc(x.nama)}"></div><h3 class="mt-3">Tugas pokok dan fungsi</h3>${li(x.tupoksi)||'<p>Belum diisi.</p>'}<h3 class="mt-3">Call center</h3><p>${x.callcenter?(wa(x.callcenter)?`<a href="${wa(x.callcenter)}" target="_blank" rel="noopener">${esc(x.callcenter)}</a>`:esc(x.callcenter)):'Belum tersedia.'}</p></div></div><div class="col-lg-7"><div class="grid">${deps.map(dcard).join('')}</div></div></div><a class="btn-px alt mt-4" href="#/kementerian"><i class="bi bi-arrow-left"></i> Kembali</a></div></section>`}
+  const rows=k.flatMap(x=>x.logo==='presiden-wapres'?[{...x,menteri:pres?.nama||'Belum diisi',foto:pres?.foto,nama:'Presiden BEM'},{...x,menteri:wp?.nama||'Belum diisi',foto:wp?.foto,nama:'Wakil Presiden BEM'}]:[x]);
+  return head('Kementerian dan Departemen','Tugas pokok, fungsi, dan jalur pengaduan')+sec('','',`<div class="grid g3">${rv(rows,x=>`<a class="card" href="#/kementerian/${esc(x.id)}"><div class="kc-top">${photo(x.foto,x.menteri,84)}<img class="kimg" src="assets/logo/${esc(x.logo)}.png" alt=""></div><div class="mname mt-2">${esc(x.menteri)}</div><h3 class="kname">${esc(x.nama)}</h3><p>${dc(x)} &middot; Call center: ${esc(x.callcenter||'-')}</p></a>`)}</div>`)}
 let evFilter='Semua';
 async function event(){
   const e=(await get('event')).sort((a,b)=>String(a.tanggal).localeCompare(b.tanggal)),l=e.filter(x=>evFilter==='Semua'||(evFilter==='BEM'?/^BEM/i.test(x.penyelenggara):!/^BEM/i.test(x.penyelenggara)));
@@ -99,24 +107,31 @@ async function template(){
 async function ebook(){
   const e=await get('ebook'),cats=['Semua',...new Set(e.map(x=>x.kategori).filter(Boolean))];
   return head('E-book Gratis','Koleksi bacaan untuk mahasiswa')+`<section class="sec"><div class="container"><div class="chips">${cats.map((c,i)=>`<button class="chip ${i?'':'on'}" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}</div>${e.length?`<div class="grid g4" id="books">${e.map((x,i)=>`<div class="card rv" style="--i:${i%6}" data-k="${esc(x.kategori)}">${im(x.sampul,'Sampul '+x.judul,'t')}<h3>${esc(x.judul)}</h3><p>${esc(x.penulis)}</p><div><a class="btn-px sm" href="${url(x.tautan)}" target="_blank" rel="noopener">Baca / Unduh</a></div></div>`).join('')}</div>`:empty('Belum ada e-book.')}</div></section>`}
-const tim=async()=>head('Tim Pengembang Web','Departemen Informasi dan Teknologi')+`<section class="sec"><div class="container"><div class="card quick"><img src="assets/ikon/dept-informasi-teknologi.png" alt=""><div><h3>Departemen Informasi dan Teknologi</h3><p>Kementerian Media dan Informasi, Kabinet Winatra. Daftar anggota tim dapat diisi di sini.</p></div></div></div></section>`;
+async function tim(){
+  let t=[];try{t=await get('tim')}catch(e){}
+  t=t.filter(x=>String(x.nama||'').trim());
+  if(!t.length)t=[{peran:'Pimpinan Produksi',nama:'Dedy Indra Setiawan',urut:1},{peran:'Penanggung Jawab',nama:'Aulia',urut:2},{peran:'Monitoring & Maintenance',nama:'Yoga',urut:3}];
+  t.sort((a,b)=>a.urut-b.urut);const g=[];t.forEach(x=>{let e=g.find(y=>y[0]===x.peran);if(!e)g.push(e=[x.peran,[]]);e[1].push(x)});
+  return head('Tim Pengembang Web','Departemen Informasi dan Teknologi, Kementerian Media dan Informasi')+`<section class="sec"><div class="container"><div class="org3">${g.map(([r,l],i)=>`${i?'<div class="vl s"></div>':''}<div class="tg"><h2>${esc(r)}</h2><div class="tgl">${l.map(p=>pr({...p,jabatan:r},{w:60,cls:i?'':'dk big',logo:'assets/ikon/dept-informasi-teknologi.png'})).join('')}</div></div>`).join('')}</div></div></section>`}
 
 /* ---- login + dasbor ---- */
 const navLogin=()=>{const s=ses(),a=$('#loginLink');if(!a)return;a.textContent=s?'Dasbor':'Masuk';a.href=s?DASH(s.user.role):'#/login'};
 async function login(){
   const s=ses();if(s){location.href=DASH(s.user.role);return''}
   return head('Masuk','Khusus ormawa, BEM, dan Kemahasiswaan')+`<section class="sec"><div class="container"><form class="card" id="loginForm" style="max-width:460px"><label>Username<input class="form-control" name="username" required autocomplete="username" autocapitalize="none"></label><label>Kata sandi<input class="form-control" name="password" type="password" required autocomplete="current-password"></label><button class="btn-px" type="submit">Masuk</button><p class="mb-0 small">${DEMO_ON?'Mode demo:<br>Admin: <b>admin</b> / <b>admin123</b><br>Ormawa: <b>ormawa</b> / <b>ormawa123</b><br>Kemahasiswaan: <b>kemahasiswaan</b> / <b>kem123</b>':'Gunakan akun yang diberikan oleh BEM.'}</p></form></div></section>`}
-const TITLE={berita:'Berita',event:'Event',proker:'Proker',proker_bem:'Proker BEM',tinjau:'Tinjau Proker Ormawa',pejabat:'Pejabat Pimpinan',ebook:'E-book',template:'Template',kementerian:'Kementerian',users:'Pengguna'};
+const TITLE={berita:'Berita',event:'Event',proker:'Proker',proker_bem:'Proker BEM',tinjau:'Tinjau Proker Ormawa',pejabat:'Struktur: Pimpinan',tim:'Tim Web',ebook:'E-book',template:'Template',kementerian:'Kementerian',users:'Pengguna'};
 const FIELDS={
  berita:[['judul','Judul'],['ringkasan','Ringkasan','area'],['isi','Isi berita','area'],['gambar','Tautan gambar (Drive)','url'],['tanggal','Tanggal','date'],['penulis','Penulis']],
  event:[['judul','Judul event'],['penyelenggara','Penyelenggara'],['tanggal','Tanggal','date'],['lokasi','Lokasi'],['poster','Tautan poster (Drive)','url'],['juknis','Tautan juknis (Drive)','url'],['narahubung','Nama narahubung'],['kontak','WhatsApp narahubung','tel'],['status','Status','select:Tayang,Draf,Menunggu']],
  proker:[['ormawa','Ormawa'],['program','Nama program kerja'],['waktu','Waktu pelaksanaan'],['anggaran','Perkiraan anggaran (Rp)','number'],['pj','Penanggung jawab'],['kontak','WhatsApp','tel'],['tautan','Tautan dokumen proker (Drive)','url'],['deskripsi','Deskripsi singkat','area'],['status','Status BEM','select:Ditinjau,Diterima,Revisi,Ditolak'],['catatan','Catatan untuk ormawa (wajib jika Revisi/Ditolak)','area']],
  ebook:[['judul','Judul'],['penulis','Penulis'],['kategori','Kategori'],['sampul','Tautan sampul (Drive)','url'],['tautan','Tautan e-book (Drive)','url']],
  template:[['nama','Nama template'],['kategori','Kategori'],['tautan','Tautan file (Drive)','url']],
+ tim:[['peran','Peran (contoh: Pimpinan Produksi)'],['nama','Nama'],['foto','Foto (tautan Google Drive)','url'],['urut','Urutan','number']],
  pejabat:[['jabatan','Jabatan'],['nama','Nama'],['foto','Foto (tautan Google Drive)','url'],['urut','Urutan','number']],
  kementerian:[['nama','Nama kementerian'],['menteri','Nama menteri'],['foto','Foto menteri (tautan Google Drive)','url'],['tupoksi','Tupoksi (satu baris satu poin)','area'],['callcenter','Call center (WhatsApp)','tel'],['logo','Nama file logo'],['urut','Urutan','number'],['departemen','Departemen dan staf','dep']],
  users:[['username','Username'],['password','Kata sandi (kosongkan jika tidak diubah)','password'],['nama','Nama'],['role','Peran','select:ormawa,admin,kemahasiswaan'],['ormawa','Nama ormawa']]};
 let S={sheet:null,rows:[],edit:null,next:null};
+const DESC={pejabat:'Mengatur Presiden, Wakil Presiden, Sekretaris Kabinet, Dewan Pertimbangan Presiden, dan Staf Khusus yang tampil di halaman Struktur. Isi nama, foto (tautan Drive), dan urutan. Urutan 1 = Presiden, 2 = Wakil Presiden.',tim:'Susunan tim pengembang web di halaman Tim Web. Orang dengan peran yang sama otomatis dikelompokkan. Urutan menentukan posisi kelompok.',kementerian:'Nama menteri, foto menteri, tupoksi, call center, dan daftar departemen beserta pejabat dan fotonya.'};
 const ARS=['proker','proker_bem','event','tinjau'];
 const SH=()=>['proker_bem','tinjau'].includes(S.sheet)?'proker':S.sheet;
 const isBem=x=>x.pemilik==='admin'||x.ormawa==='BEM';
@@ -157,13 +172,13 @@ async function dash(kind){
   if(!s){location.href='index.html#/login';return''}
   if(s.user.role!==kind){location.href=DASH(s.user.role);return''}
   if(kind==='kemahasiswaan')return kemDash(s);
-  const tabs=kind==='admin'?['tinjau','proker_bem','berita','event','ebook','template','pejabat','kementerian','users']:['proker','event'];if(!tabs.includes(S.sheet))S.sheet=tabs[0];S.kind=kind;
+  const tabs=kind==='admin'?['tinjau','proker_bem','berita','event','ebook','template','pejabat','tim','kementerian','users']:['proker','event'];if(!tabs.includes(S.sheet))S.sheet=tabs[0];S.kind=kind;
   S.rows=(await post({action:'list',sheet:SH()})).data;S.view=S.view||'aktif';if(S.sheet==='proker_bem')S.rows=S.rows.filter(isBem);if(S.sheet==='tinjau')S.rows=S.rows.filter(x=>!isBem(x));S.all=S.rows;if(ARS.includes(S.sheet))S.rows=S.rows.filter(x=>(x.arsip==='ya')===(S.view==='arsip'));const f=FIELDS[SH()],own=s.user.role!=='admin',cols=S.sheet==='tinjau'?['ormawa','program','waktu','status','catatan','status_kem']:S.sheet==='proker_bem'?['program','waktu','status_kem','catatan_kem']:SH()==='proker'?(own?['program','waktu']:['ormawa','program']).concat(['status','catatan','status_kem','catatan_kem']):f.slice(0,3).map(x=>x[0]).concat(f.find(x=>x[0]==='status')?['status']:[]);
   const cnt=st=>S.rows.filter(x=>x.status===st).length;
   return head(kind==='admin'?'Dasbor Super Admin':'Dasbor Ormawa',`Masuk sebagai ${esc(s.user.nama)}${s.user.ormawa?' ('+esc(s.user.ormawa)+')':''}`)+`<section class="sec"><div class="container"><div class="dash"><nav class="side" aria-label="Data">${tabs.map(t=>`<button class="chip ${t===S.sheet?'on':''}" data-tab="${t}">${TITLE[t]}</button>`).join('')}<button class="chip" data-act="logout"><i class="bi bi-box-arrow-right"></i> Keluar</button></nav>
   <div>${statCards(f)}
   <div class="bar"><input class="form-control" id="q" type="search" placeholder="Cari data..." aria-label="Cari" style="max-width:320px">${S.sheet==='tinjau'?'':'<button class="btn-px" data-act="new"><i class="bi bi-plus-lg"></i> Tambah</button>'}</div>
-  ${viewChips()}
+  ${DESC[S.sheet]?`<p class="hint">${DESC[S.sheet]}</p>`:''}${viewChips()}
   ${S.rows.length?`<table class="tbl"><thead><tr>${cols.map(c=>`<th>${LBL[c]||c}</th>`).join('')}<th>Aksi</th></tr></thead><tbody>${S.rows.map(x=>`<tr>${cols.map(c=>`<td data-l="${LBL[c]||c}">${cell(x,c)}</td>`).join('')}<td><div class="acts">${acts(x)}</div></td></tr>`).join('')}</tbody></table>`:empty('Belum ada data.')}</div></div></div></section>`}
 function form(row){
   S.edit=row;
@@ -172,7 +187,7 @@ function form(row){
     if(t==='dep')return depEditor(row);
     if(t==='area')return`<label>${l}<textarea ${b} rows="3">${esc(v)}</textarea></label>`;
     if(t?.startsWith('select'))return`<label>${l}<select class="form-select" name="${k}">${t.slice(7).split(',').map(o=>`<option ${o===v?'selected':''}>${o}</option>`).join('')}</select></label>`;
-    return`<label>${l}<input ${b} type="${t||'text'}" ${t==='tel'?'inputmode="tel"':''} value="${k==='password'?'':esc(v)}" ${['judul','program','username','nama','jabatan'].includes(k)?'required':''}></label>`};
+    return`<label>${l}<input ${b} type="${t||'text'}" ${t==='tel'?'inputmode="tel"':''} value="${k==='password'?'':esc(v)}" ${['judul','program','username','nama','jabatan','peran'].includes(k)?'required':''}></label>`};
   modal((row?'Ubah ':'Tambah ')+TITLE[S.sheet],`<form id="crudForm">${f.map(inp).join('')}</form>`,`<button class="btn-px alt" data-bs-dismiss="modal">Batal</button><button class="btn-px" type="submit" form="crudForm">Simpan</button>`)}
 
 /* ---- router ---- */

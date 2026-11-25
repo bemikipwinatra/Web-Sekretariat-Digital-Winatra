@@ -58,3 +58,15 @@ Render Chromium (Playwright) di 360, 390, 768, 1024, 1440 px pada beranda, struk
 - Struktur: tanpa kotak Lembaga, Dewan Pertimbangan dan Staf Khusus tidak ditampilkan, Sekretaris Kabinet di samping Wapres (tanpa kotak). Halaman Kementerian tidak lagi memuat Presiden/Wapres.
 - Panel admin: tab **Struktur** menampilkan semua nama di halaman Struktur (pimpinan, menteri, pejabat departemen); ubah nama dan foto langsung dari sini. Tambah/hapus departemen lewat tab Kementerian.
 - Hero beranda bermotif batik. Halaman Masuk menampilkan Winatra Card (data akun disamarkan, `assets/img/winatra-card-sensor.png`).
+
+## Alur event (v6.7)
+Ormawa kirim event (Menunggu) → admin BEM, tab **Tinjau Event**: Disetujui / Revisi / Ditolak.
+- **Disetujui**: status jadi Tayang, langsung muncul di halaman Event web, dan pindah ke tab **Event** admin.
+- **Revisi / Ditolak**: wajib isi catatan; ormawa langsung melihatnya di kolom Catatan dasbornya. Setelah ormawa mengubah event, status otomatis kembali Menunggu dan catatan dikosongkan.
+- **Selesai**: di tab Event admin klik **Arsipkan**; event otomatis hilang dari web (bisa diaktifkan lagi dari tab Arsip).
+
+**Wajib di Apps Script (sekali saja):** tambahkan kolom `catatan` pada sheet `event`.
+1. Di `Code.gs` (yang ada di Apps Script), pada `SCHEMA` baris `event:[...]`, tambahkan `'catatan'` di PALING AKHIR array (setelah `'arsip'` jika ada).
+2. Jalankan fungsi `setup` sekali. Jika kolom tidak muncul otomatis, ketik `catatan` di sel header paling kanan sheet `event`.
+3. Deploy > Kelola deployment > Edit > Versi baru > Deploy.
+Tanpa kolom ini, keputusan Disetujui tetap jalan, tetapi Revisi/Ditolak ditolak dengan pesan yang jelas.

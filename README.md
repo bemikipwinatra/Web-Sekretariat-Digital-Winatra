@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Web BEM IKIP PGRI Bojonegoro - Kabinet Winatra (v2, front-end baru)
 
 HTML5, CSS3, JavaScript ES6+, Bootstrap 5.3 dan Bootstrap Icons (CDN). Tanpa build tool, siap untuk GitHub Pages/Netlify.
@@ -46,3 +47,7 @@ Render Chromium (Playwright) di 360, 390, 768, 1024, 1440 px pada beranda, struk
 - Foto pejabat: isi tautan Google Drive (akses "siapa saja yang memiliki link") di tab Pejabat Pimpinan dan Kementerian (admin).
 - Ormawa tidak bisa menghapus data; gunakan Arsipkan (program selesai) dan Aktifkan untuk membatalkan.
 - Logo coklat vektor: assets/logo/kabinet-winatra-coklat.svg (navbar dan hero). Footer memakai logo berwarna asli.
+=======
+# Web-Sekretariat-Digital-Winatra
+Web Sekretariat Digital Winatra
+>>>>>>> a2767424041fdd191815b98706ca4fdf0549e679

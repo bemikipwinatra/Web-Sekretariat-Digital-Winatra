@@ -83,11 +83,7 @@ async function struktur(){
   const dep=m=>J(m.departemen).map(d=>`<li>${d.i?`<img src="assets/ikon/${esc(d.i)}.png" alt="">`:'<i></i>'}<span><b>${esc(d.p||'Belum diisi')}</b><small>${esc(d.n)}</small></span></li>`).join('');
   return head('Struktur Organisasi','Susunan Kabinet Winatra')+`<section class="sec"><div class="container"><div class="org3">
   ${pres?`<div class="olead">${pr(pres,{cls:'dk big',w:64,logo:LG})}</div><div class="vl s"></div>`:''}
-<<<<<<< HEAD
-  ${wp?`<div class="wprow"><div class="olead">${pr(wp,{cls:'wp big',w:64,logo:LG})}</div>${sek?`<div class="vl s sekv"></div><div class="sekr">${pr(sek,{cls:'plain',w:52})}</div>`:''}</div><div class="vl s"></div>`:''}
-=======
   ${wp?`<div class="wprow"><div class="olead">${pr(wp,{cls:'wp big',w:64,logo:LG})}</div>${sek?`<div class="vl s sekv"></div><div class="sekr">${pr(sek,{w:52,logo:icoOf(sek.jabatan)})}</div>`:''}</div><div class="vl tall"></div>`:''}
->>>>>>> c966afd (final struktur desain)
   <div class="kids2" style="--n:${mem.length||1}">${mem.map(m=>`<div class="kc"><div class="mn"><a class="mh" href="#/kementerian/${esc(m.id)}"><img src="assets/logo/${esc(m.logo)}.png" alt=""><b>${esc(m.nama)}</b></a>${pr({foto:m.foto,nama:m.menteri,jabatan:'Menteri'},{cls:'flat',w:48})}<ul class="dl3">${dep(m)}</ul></div></div>`).join('')}</div></div></div></section>`}
 async function kementerian(id){
   const k=(await get('kementerian')).sort((a,b)=>a.urut-b.urut),pjs=await pimpinan();

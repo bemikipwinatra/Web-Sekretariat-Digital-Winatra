@@ -52,3 +52,7 @@ table{width:100%;border-collapse:collapse;background:var(--white);font-size:14px
 .load{padding:80px;text-align:center}
 @media(max-width:900px){.hero .wrap,.g2,.g3,.g4,.g5{grid-template-columns:1fr}.hero h1{font-size:38px}.top{padding:10px 16px}}
 @media(prefers-reduced-motion:no-preference){.card{transition:transform .15s}.card:hover{transform:translate(-2px,-2px)}}
+.sec.pb-0{padding-bottom:var(--s6)!important}
+@media(min-width:768px){.sec.pb-0{padding-bottom:var(--s8)!important}}
+.hero+.sec::before{display:none}
+.sec>.container{position:relative;z-index:1}

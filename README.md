@@ -70,3 +70,11 @@ Ormawa kirim event (Menunggu) → admin BEM, tab **Tinjau Event**: Disetujui / R
 2. Jalankan fungsi `setup` sekali. Jika kolom tidak muncul otomatis, ketik `catatan` di sel header paling kanan sheet `event`.
 3. Deploy > Kelola deployment > Edit > Versi baru > Deploy.
 Tanpa kolom ini, keputusan Disetujui tetap jalan, tetapi Revisi/Ditolak ditolak dengan pesan yang jelas.
+
+## Proposal Kegiatan dan LPJ (v7)
+- **Proposal Kegiatan** mengikuti format ajuan: nama kegiatan, nama PJ, WhatsApp PJ, tanggal pelaksanaan, tanggal ajuan (otomatis), nominal ajuan dana, dan unggah proposal berjenis **Dana** atau **Non Dana** (nominal hanya untuk Dana).
+- **LPJ** mengikuti format LPJ: ditambah nominal ajuan, **nominal di-ACC** (diisi Kemahasiswaan), dan tautan LPJ Dana atau Non Dana. Kegiatan bisa dipilih dari proposal yang sudah disetujui Kemahasiswaan, datanya terisi otomatis.
+- **Alur sama untuk proposal dan LPJ**: ormawa kirim (Ditinjau) -> BEM: Diterima / Revisi / Ditolak + catatan -> bila Diterima, masuk Kemahasiswaan: Disetujui / Revisi / Ditolak + keterangan (+ nominal ACC untuk LPJ Dana) -> ormawa melihat semua catatan di dasbornya. Mengubah dokumen = kirim ulang dari awal.
+- **Kritik dan saran** (khusus LPJ) hanya dibaca BEM. Dibuang di sisi server dari semua data Kemahasiswaan, bukan hanya disembunyikan di tampilan.
+- Admin: tab Tinjau Proposal, Tinjau LPJ, Proposal BEM, LPJ BEM (dokumen BEM sendiri langsung ke Kemahasiswaan).
+- Wajib setelah mengganti Code.gs: jalankan `setup` sekali (membuat sheet `lpj` dan kolom `jenis` pada sheet `proker`), lalu deploy versi baru.

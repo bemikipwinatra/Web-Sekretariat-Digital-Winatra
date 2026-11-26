@@ -253,3 +253,9 @@ body[data-page^="dash"] .sec::before,body[data-page^="dash"] .sec::after{display
 .bk p{margin:0;font-size:.8125rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .bk>div:last-child{margin-top:auto;padding-top:4px}
 .bk .btn-px{display:block;width:100%;text-align:center;padding:7px 8px;min-height:36px;font-size:.8125rem;box-shadow:2px 2px 0 var(--brown)}
+
+/* ===== proposal & LPJ ===== */
+.kt{margin-bottom:var(--s3)}
+.tbl-sm{font-size:.8125rem}.tbl-sm th,.tbl-sm td{padding:8px}
+.print-t{display:none}
+@media print{.print-t{display:block}.kt{display:none!important}.tbl-sm{font-size:9pt}}
